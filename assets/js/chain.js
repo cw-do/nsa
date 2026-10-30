@@ -62,10 +62,13 @@
   }
 
   // Open on a typical chain: of a few candidates, the one whose Rg is the median.
-  let pos = (function () {
+  // That Rg also fixes the drawing scale, once.
+  let RG_REF = 0;
+  let pos =(function () {
     const c = [];
     for (let k = 0; k < 15; k++) { const p = makeChain(); c.push([radiusOfGyration(p), p]); }
     c.sort((a, b) => a[0] - b[0]);
+    RG_REF = c[7][0];
     return c[7][1];
   })();
 
@@ -121,7 +124,6 @@
 
   // ---- Drawing ----
   let W = 0, H = 0, dpr = 1;
-  const view = { cx: 0, cy: 0, scale: 0 };
   const colors = [[106, 212, 231], [128, 170, 240], [150, 140, 236], [182, 128, 220], [226, 160, 205]];
   const BUCKETS = 10, LEVELS = 4;
 
@@ -130,7 +132,6 @@
     dpr = Math.min(window.devicePixelRatio || 1, 2);
     W = r.width; H = r.height;
     canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
-    view.scale = 0;
     draw(performance.now());
   }
 
@@ -162,17 +163,14 @@
     line.push(pos[N - 1]);
     const M = line.length;
 
-    // Fit the view to the chain, easing so the frame never jumps.
-    let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
-    const proj = line.map(rot);
-    for (const r of proj) { x0 = Math.min(x0, r[0]); x1 = Math.max(x1, r[0]); y0 = Math.min(y0, r[1]); y1 = Math.max(y1, r[1]); }
-    const pad = TUBE * 2;
-    const sTarget = Math.min(panel.w / (x1 - x0 + 2 * pad), panel.h / (y1 - y0 + 2 * pad));
-    const cxT = (x0 + x1) / 2, cyT = (y0 + y1) / 2;
-    if (!view.scale) { view.scale = sTarget; view.cx = cxT; view.cy = cyT; }
-    view.scale += (sTarget - view.scale) * 0.02;
-    view.cx += (cxT - view.cx) * 0.03;
-    view.cy += (cyT - view.cy) * 0.03;
+    // Fixed magnification, centred on the centre of mass, so the ring's size on screen
+    // follows R_g and nothing else. (Fitting the view to the chain's outline zoomed out as
+    // the chain stretched, and the ring shrank while R_g grew.)
+    const scale = Math.min(panel.w, panel.h) / (3.8 * RG_REF);
+    let mx = 0, my = 0, mz = 0;
+    for (const r of pos) { mx += r[0]; my += r[1]; mz += r[2]; }
+    const com = rot([mx / N, my / N, mz / N]);
+    const ox = panel.x + panel.w / 2, oy = panel.y + panel.h / 2;
 
     // Parallel-transport frame along the tube, so the dot rings do not spin about the axis.
     const tang = [], nrm = [];
@@ -187,23 +185,19 @@
       nrm.push(n);
     }
 
-    // The radius of gyration as a ring about the centre of mass: the same R_g that
-    // sets where the scattering curve below turns over, at q ~ 1/R_g.
-    let mx = 0, my = 0, mz = 0;
-    for (const r of pos) { mx += r[0]; my += r[1]; mz += r[2]; }
-    const com = rot([mx / N, my / N, mz / N]);
-    const ox = panel.x + panel.w / 2 + (com[0] - view.cx) * view.scale;
-    const oy = panel.y + panel.h / 2 + (com[1] - view.cy) * view.scale;
-    const rr = shown.rg * view.scale;
+    // The radius of gyration of the chain as drawn in this frame, as a ring about the
+    // centre of mass: the same R_g that sets where the curve below turns over, q ~ 1/R_g.
+    const rg = radiusOfGyration(pos);
+    const rr = rg * scale;
     ctx.setLineDash([2, 5]);
     ctx.lineWidth = 1;
     ctx.strokeStyle = "rgba(106,212,231,0.5)";
     ctx.beginPath(); ctx.arc(ox, oy, rr, 0, 2 * Math.PI); ctx.stroke();
     ctx.setLineDash([]);
-    rgLabel(ox + rr * 0.71 + 6, oy - rr * 0.71 - 4, "", " = " + shown.rg.toFixed(1), "rgba(106,212,231,0.95)");
+    rgLabel(ox + rr * 0.71 + 6, oy - rr * 0.71 - 4, "", " = " + rg.toFixed(1), "rgba(106,212,231,0.95)");
 
     const paths = Array.from({ length: BUCKETS * LEVELS }, () => new Path2D());
-    const depthRange = Math.max(x1 - x0, y1 - y0) / 2 || 1;
+    const depthRange = 2 * RG_REF;
     const spin = time * 0.0004;
     for (let i = 0; i < M; i++) {
       const c = line[i], t = tang[i], nn = nrm[i], bb = cross(t, nn);
@@ -213,13 +207,19 @@
         const ct = Math.cos(th), st = Math.sin(th);
         const off = [nn[0] * ct + bb[0] * st, nn[1] * ct + bb[1] * st, nn[2] * ct + bb[2] * st];
         const w = rot([c[0] + TUBE * off[0], c[1] + TUBE * off[1], c[2] + TUBE * off[2]]);
+        const sx = ox + (w[0] - com[0]) * scale;
+        const sy = oy + (w[1] - com[1]) * scale;
+        // With a fixed scale a stretched chain can reach the panel edge: thin it out there
+        // rather than cutting it off.
+        const edge = Math.min(sx - panel.x, panel.x + panel.w - sx, sy - panel.y, panel.y + panel.h - sy);
+        if (edge <= 0) continue;
+        const fade = Math.min(1, edge / 40);
+        if (fade < 1 && (k * 7 + i * 3) % 10 >= fade * 10) continue;
         const facing = rot(off)[2];                    // +1 faces the viewer
-        const depth = Math.max(-1, Math.min(1, w[2] / depthRange));
-        const light = (0.55 + 0.45 * facing) * (0.72 + 0.28 * depth);
+        const depth = Math.max(-1, Math.min(1, (w[2] - com[2]) / depthRange));
+        const light = (0.55 + 0.45 * facing) * (0.72 + 0.28 * depth) * (0.5 + 0.5 * fade);
         const level = Math.max(0, Math.min(LEVELS - 1, Math.floor(light * LEVELS)));
         const size = 1.3 + 0.9 * (depth + 1) / 2;
-        const sx = panel.x + panel.w / 2 + (w[0] - view.cx) * view.scale;
-        const sy = panel.y + panel.h / 2 + (w[1] - view.cy) * view.scale;
         paths[bucket * LEVELS + level].rect(sx - size / 2, sy - size / 2, size, size);
       }
     }
