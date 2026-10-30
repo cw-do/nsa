@@ -78,8 +78,9 @@ then open <http://localhost:8000/nsa/>.
 The animation at the top of the home page (`assets/js/chain.js`) is a real
 calculation: a semiflexible chain of 120 segments twists at random about its own
 bonds, its scattering is computed from all pairs of segments with the Debye
-equation, and it is drawn against Debye's 1947 formula for an ideal chain with the
-same radius of gyration. Readers who ask their system for reduced motion see one
+equation ten times a second, and it is drawn against Debye's formula for an ideal
+chain with the same radius of gyration. A dotted ring of radius R_g around the
+chain and a dotted line at q = 1/R_g on the plot move together. Readers who ask their system for reduced motion see one
 still frame.
 
 Fonts are Source Serif and Source Sans by Adobe, under the SIL Open Font License

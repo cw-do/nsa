@@ -114,6 +114,8 @@ a:hover { color: var(--cream); }
 .sim { margin: 0; }
 .sim canvas { display: block; width: 100%; aspect-ratio: 1 / 1.02; }
 .sim figcaption { margin-top: 14px; font: 400 0.9375rem/1.5 var(--sans); color: var(--mist); max-width: 46em; }
+.sim figcaption i { font-family: var(--serif); }
+.sim sub { font-size: 0.75em; line-height: 0; }
 .key-gold, .key-cyan { font-weight: 600; }
 .key-gold { color: var(--gold); }
 .key-cyan { color: var(--cyan); }

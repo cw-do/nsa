@@ -15,7 +15,7 @@
   const TUBE = 2.0;        // drawn tube radius, in segment lengths
   const RING = 12;         // dots around the tube
   const SUB = 2;           // rings per segment
-  const TWISTS = 4;        // torsion moves running at once
+  const TWISTS = 6;        // torsion moves running at once
   const NQ = 72, QMIN = 0.01, QMAX = 2.5;
   const LOGP_MIN = -2.35, LOGP_MAX = 0.15;
 
@@ -85,14 +85,14 @@
   function newTwist(now) {
     const k = 1 + Math.floor(rand() * (N - 2));
     const tail = Math.max(2, Math.min(k, N - k));
-    return { k, t0: now, dur: 3 + 4 * rand(), amp: (rand() < 0.5 ? -1 : 1) * 0.8 / Math.sqrt(tail) };
+    return { k, t0: now, dur: 3 + 4 * rand(), amp: (rand() < 0.5 ? -1 : 1) * 1.4 / Math.sqrt(tail) };
   }
   let twists = [];
 
   // ---- Scattering ----
   const qs = Array.from({ length: NQ }, (_, i) => QMIN * Math.pow(QMAX / QMIN, i / (NQ - 1)));
-  const shown = { chain: null, debye: null };
-  let target = { chain: null, debye: null };
+  const shown = { chain: null, debye: null, rg: 0 };
+  let target = { chain: null, debye: null, rg: 0 };
 
   function scattering() {
     const dr = 0.1;
@@ -115,8 +115,8 @@
       const pd = x < 1e-4 ? 1 - x / 3 : 2 * (Math.exp(-x) + x - 1) / (x * x);
       debye.push(Math.log10(pd));
     }
-    target = { chain, debye };
-    if (!shown.chain) { shown.chain = chain.slice(); shown.debye = debye.slice(); }
+    target = { chain, debye, rg };
+    if (!shown.chain) { shown.chain = chain.slice(); shown.debye = debye.slice(); shown.rg = rg; }
   }
 
   // ---- Drawing ----
@@ -187,6 +187,21 @@
       nrm.push(n);
     }
 
+    // The radius of gyration as a ring about the centre of mass: the same R_g that
+    // sets where the scattering curve below turns over, at q ~ 1/R_g.
+    let mx = 0, my = 0, mz = 0;
+    for (const r of pos) { mx += r[0]; my += r[1]; mz += r[2]; }
+    const com = rot([mx / N, my / N, mz / N]);
+    const ox = panel.x + panel.w / 2 + (com[0] - view.cx) * view.scale;
+    const oy = panel.y + panel.h / 2 + (com[1] - view.cy) * view.scale;
+    const rr = shown.rg * view.scale;
+    ctx.setLineDash([2, 5]);
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = "rgba(106,212,231,0.5)";
+    ctx.beginPath(); ctx.arc(ox, oy, rr, 0, 2 * Math.PI); ctx.stroke();
+    ctx.setLineDash([]);
+    rgLabel(ox + rr * 0.71 + 6, oy - rr * 0.71 - 4, "", " = " + shown.rg.toFixed(1), "rgba(106,212,231,0.95)");
+
     const paths = Array.from({ length: BUCKETS * LEVELS }, () => new Path2D());
     const depthRange = Math.max(x1 - x0, y1 - y0) / 2 || 1;
     const spin = time * 0.0004;
@@ -219,6 +234,22 @@
     ctx.globalCompositeOperation = "source-over";
   }
 
+  // Italic R with a subscript g, between optional prefix and suffix text.
+  function rgLabel(x, y, prefix, suffix, color, center) {
+    const big = "italic 14px 'Source Serif', Georgia, serif", small = "italic 10px 'Source Serif', Georgia, serif";
+    ctx.fillStyle = color;
+    ctx.textBaseline = "alphabetic";
+    ctx.textAlign = "left";
+    ctx.font = big;
+    const wp = ctx.measureText(prefix).width, wr = ctx.measureText("R").width, ws = ctx.measureText(suffix).width;
+    ctx.font = small;
+    const wg = ctx.measureText("g").width;
+    let cx = center ? x - (wp + wr + wg + ws) / 2 : x;
+    ctx.font = big; ctx.fillText(prefix, cx, y); cx += wp; ctx.fillText("R", cx, y); cx += wr;
+    ctx.font = small; ctx.fillText("g", cx, y + 3); cx += wg;
+    ctx.font = big; ctx.fillText(suffix, cx, y);
+  }
+
   function drawPlot(panel) {
     if (!shown.chain) return;
     const lx0 = Math.log10(QMIN), lx1 = Math.log10(QMAX);
@@ -248,6 +279,17 @@
     ctx.clip();
     const curve = (arr) => { ctx.beginPath(); arr.forEach((lp, i) => { const x = X(Math.log10(qs[i])), y = Y(lp); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }); };
 
+    // q = 1/R_g, following the chain above as it swells and shrinks.
+    const lqg = Math.log10(1 / shown.rg);
+    const f = Math.max(0, Math.min(NQ - 1.001, ((lqg - lx0) / (lx1 - lx0)) * (NQ - 1)));
+    const j = Math.floor(f), lpg = shown.chain[j] + (shown.chain[j + 1] - shown.chain[j]) * (f - j);
+    const xg = X(lqg);
+    ctx.setLineDash([2, 4]);
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = "rgba(106,212,231,0.6)";
+    ctx.beginPath(); ctx.moveTo(xg, panel.y + panel.h); ctx.lineTo(xg, Y(lpg)); ctx.stroke();
+    ctx.setLineDash([]);
+
     ctx.setLineDash([5, 5]);
     ctx.lineWidth = 1.5;
     ctx.strokeStyle = "rgba(106,212,231,0.85)";
@@ -270,6 +312,7 @@
     ctx.fillText("chain", X(Math.log10(qs[i])) + 6, Y(shown.chain[i]) - 8);
     ctx.fillStyle = "#6ad4e7";
     ctx.fillText("Debye", X(Math.log10(qs[i])) - 46, Y(shown.debye[i]) + 18);
+    rgLabel(xg, panel.y + panel.h + 20, "1/", "", "rgba(106,212,231,0.95)", true);
   }
 
   function draw(time) {
@@ -295,10 +338,11 @@
       return true;
     });
     sinceScatter += dt;
-    if (sinceScatter > 0.25) { scattering(); sinceScatter = 0; }
+    if (sinceScatter > 0.1) { scattering(); sinceScatter = 0; }
     for (const key of ["chain", "debye"]) {
-      for (let i = 0; i < NQ; i++) shown[key][i] += (target[key][i] - shown[key][i]) * 0.08;
+      for (let i = 0; i < NQ; i++) shown[key][i] += (target[key][i] - shown[key][i]) * 0.2;
     }
+    shown.rg += (target.rg - shown.rg) * 0.2;
     draw(now);
     if (running) raf = requestAnimationFrame(frame);
   }
