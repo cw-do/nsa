@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{{ site.name }}{% endblock %}</title>
+  <meta name="description" content="{% block description %}{{ site.description }}{% endblock %}">
+  <link rel="canonical" href="{{ page_url }}">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="{{ site.short_name }}: {{ site.name }}">
+  <meta property="og:title" content="{{ self.title() }}">
+  <meta property="og:description" content="{{ self.description() }}">
+  <meta property="og:url" content="{{ page_url }}">
+  <meta property="og:image" content="{{ site.url }}/assets/img/{% block og_image %}og-nsa.jpg{% endblock %}">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="theme-color" content="#0b0e2c">
+  <link rel="icon" href="{{ base }}assets/img/mark.svg" type="image/svg+xml">
+  <link rel="preload" href="{{ base }}assets/fonts/SourceSerifPro-SemiBold.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="{{ base }}assets/fonts/SourceSerifPro-Regular.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="{{ base }}assets/css/site.css?v={{ version.css }}">
+  <script src="{{ base }}assets/js/site.js?v={{ version.js }}" defer></script>
+  {% block head %}{% endblock %}
+</head>
+<body class="page-{{ nav or 'other' }}">
+  <a class="skip" href="#main">Skip to content</a>
+  <header class="masthead">
+    <div class="wrap masthead-row">
+      <a class="brand" href="{{ base }}" aria-label="{{ site.name }}, home">
+        <svg class="brand-mark" viewBox="0 0 64 64" aria-hidden="true">
+          <g fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round">
+            <path d="M25.7 22.8A12 12 0 0 1 25.7 41.2"/>
+            <path d="M32.1 15.1A22 22 0 0 1 32.1 48.9" opacity=".62"/>
+            <path d="M38.6 7.5A32 32 0 0 1 38.6 56.5" opacity=".34"/>
+          </g>
+          <circle cx="18" cy="32" r="5" fill="var(--gold)"/>
+        </svg>
+        <span class="brand-abbr">{{ site.short_name }}</span>
+        <span class="brand-name">{{ site.name }}</span>
+      </a>
+      <nav class="nav" aria-label="Main">
+        <a href="{{ base }}long-view/"{% if nav == 'long-view' %} aria-current="page"{% endif %}>The Long View</a>
+        <a href="{{ base }}meetings/"{% if nav == 'meetings' %} aria-current="page"{% endif %}>Meetings</a>
+        <a href="{{ base }}#about">About</a>
+        <a href="{{ base }}#join">Join</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+{% block main %}{% endblock %}
+  </main>
+
+  <footer class="footer">
+    <div class="wrap footer-grid">
+      <div>
+        <p class="footer-name">{{ site.name }}</p>
+        <p>A working group since {{ site.founded }}. Host of <a href="{{ base }}long-view/">The Long View</a>.</p>
+      </div>
+      <div>
+        <p class="footer-label">Organizers</p>
+        <ul class="plain">
+        {% for o in site.organizers %}
+          <li>{{ o.name }}, {{ o.affiliation }} <a href="mailto:{{ o.email }}">{{ o.email }}</a></li>
+        {% endfor %}
+        </ul>
+      </div>
+      <div>
+        <p class="footer-label">{{ site.admin.label }}</p>
+        <p><a href="mailto:{{ site.admin.email }}">{{ site.admin.email }}</a></p>
+      </div>
+    </div>
+  </footer>
+{% block scripts %}{% endblock %}
+</body>
+</html>

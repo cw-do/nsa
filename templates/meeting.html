@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% from "macros.html" import speaker_line, when, event_actions %}
+
+{% block title %}{{ m.title }} | {{ site.short_name }} meeting {{ m.number }}{% endblock %}
+{% block description %}{{ m.ordinal }} {{ site.short_name }} meeting, {{ m.date_text }}{% if m.speakers %}, {{ m.speakers | map(attribute='name') | join(', ') }}{% endif %}.{% endblock %}
+
+{% block main %}
+<article class="section page-head detail">
+  <div class="wrap detail-grid">
+    <header class="detail-head">
+      <p class="detail-kind"><a href="{{ base }}meetings/">Meetings</a> <span aria-hidden="true">/</span> {{ m.ordinal }} meeting</p>
+      <h1 class="page-title">{{ m.title }}</h1>
+      {% if m.upcoming %}{{ when(m) }}{{ event_actions(m, base) }}{% endif %}
+    </header>
+
+    <dl class="facts">
+      <div><dt>Date</dt><dd><time datetime="{{ m.date }}">{{ m.date_text }}</time>{% if m.time_text %}<br>{{ m.time_text }}{% endif %}</dd></div>
+      {% if m.speakers %}<div><dt>Speaker{% if m.speakers | length > 1 %}s{% endif %}</dt><dd>{{ speaker_line(m.speakers) }}</dd></div>{% endif %}
+      {% if m.host %}<div><dt>Host</dt><dd>{{ m.host }}</dd></div>{% endif %}
+      {% if m.attendance %}<div><dt>On the call</dt><dd>{{ m.attendance }} people</dd></div>{% endif %}
+    </dl>
+
+    <div class="detail-main">
+      {% if m.body %}
+      <div class="prose">{{ m.body | safe }}</div>
+      {% endif %}
+
+      {% if m.participants %}
+      <h2 class="sub-title">Participants</h2>
+      <ul class="participants">
+        {% for p in m.participants %}<li>{{ p.name }}<span>{{ p.affiliation }}</span></li>{% endfor %}
+      </ul>
+      {% if m.guests %}<p class="muted">Other guests: {{ m.guests | join(', ') }}</p>{% endif %}
+      {% endif %}
+    </div>
+  </div>
+</article>
+
+<nav class="wrap pager" aria-label="Other meetings">
+  {% if m.prev %}<a class="pager-prev" href="{{ base }}{{ m.prev.url }}"><span>Previous, {{ m.prev.date_text }}</span>{{ m.prev.title }}</a>{% else %}<span></span>{% endif %}
+  {% if m.next %}<a class="pager-next" href="{{ base }}{{ m.next.url }}"><span>Next, {{ m.next.date_text }}</span>{{ m.next.title }}</a>{% endif %}
+</nav>
+{% endblock %}

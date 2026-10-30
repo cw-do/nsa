@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% from "macros.html" import event_card %}
+
+{% block title %}{{ long_view.title }}: {{ long_view.subtitle }}{% endblock %}
+{% block description %}{{ long_view.summary }}{% endblock %}
+{% block og_image %}og-long-view.jpg{% endblock %}
+
+{% block main %}
+<section class="lv-band lv-page">
+  <div class="wrap lv-head">
+    <p class="lv-intro">{{ long_view.intro }}</p>
+    <h1 class="lv-title">{{ long_view.title }}</h1>
+    <p class="lv-sub">{{ long_view.subtitle }}</p>
+  </div>
+  <div class="lv-art">
+    <img src="{{ base }}assets/img/long-view-art.jpg" alt="" width="1122" height="515">
+  </div>
+  <div class="wrap lv-body">
+    <p class="lv-headline">{{ long_view.headline }}</p>
+    <p class="lv-closing">{{ long_view.closing }}</p>
+  </div>
+</section>
+
+<section class="section" aria-labelledby="series-title">
+  <div class="wrap lv-columns">
+    <div>
+      <h2 class="section-title" id="series-title">About the series</h2>
+      <div class="prose prose-large">{{ long_view.body | safe }}</div>
+    </div>
+    <figure class="poster">
+      <a href="{{ base }}assets/img/long-view-poster.png"><img src="{{ base }}assets/img/long-view-poster.jpg" alt="The Long View poster: Conversations in Soft Matter. The thinking behind the models. Hosted by the NSA working group." width="1122" height="1402" loading="lazy"></a>
+      <figcaption>Share the poster: <a href="{{ base }}assets/img/long-view-poster.png" download>download it as a PNG</a> (1122 × 1402).</figcaption>
+    </figure>
+  </div>
+</section>
+
+{% set coming = conversations | selectattr('upcoming') | list %}
+{% set past = conversations | rejectattr('upcoming') | list %}
+<section class="section" id="conversations" aria-labelledby="conv-title">
+  <div class="wrap">
+    <h2 class="section-title" id="conv-title">Conversations</h2>
+    {% if coming %}
+    <div class="upcoming" data-upcoming>
+      {% for c in coming %}{{ event_card(dict(c, kind='conversation'), base) }}{% endfor %}
+      <p class="upcoming-empty" hidden>The next conversation will be announced here.</p>
+    </div>
+    {% endif %}
+    {% if not conversations %}
+    <div class="empty">
+      <p class="statement">The first conversation will be announced here.</p>
+      <p class="muted">To hear about it first, ask to be added to the mailing list. Is there a scientist whose way of thinking you would like to hear in their own words? Tell us.</p>
+      <div class="actions">
+        <a class="btn btn-gold" href="{{ mailto('The Long View: please notify me') }}">Tell me when it starts</a>
+        <a class="btn" href="{{ mailto('The Long View: a guest suggestion') }}">Suggest a guest</a>
+      </div>
+    </div>
+    {% endif %}
+    {% if past %}
+    <h3 class="sub-title">Past conversations</h3>
+    <ul class="conv-list">
+      {% for c in past | reverse %}
+      <li>
+        <a href="{{ base }}{{ c.url }}">{{ c.guest }}</a>
+        <span class="muted">{{ c.date_text }}{% if c.title %}. {{ c.title }}{% endif %}</span>
+      </li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

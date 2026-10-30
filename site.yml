@@ -1,0 +1,77 @@
+# Site-wide settings. Edit, commit and push: the site rebuilds itself in about a minute.
+
+name: Neutrons, Soft Matters and Algorithms
+short_name: NSA
+url: https://cw-do.github.io/nsa
+founded: 2025
+
+# One sentence for search engines and link previews.
+description: >-
+  An international working group where neutron scattering, soft matter and the
+  mathematics of data analysis meet. Home of The Long View, a seminar series of
+  conversations in soft matter.
+
+# The big staggered title on the home page, one line each.
+hero_lines:
+  - Neutrons,
+  - Soft Matters,
+  - and Algorithms
+
+# The hero paragraph on the home page.
+lead: >-
+  A working group for scientists who study soft materials with neutrons and
+  reason about the data with mathematics, statistical mechanics and AI. We meet
+  online, and anyone working where these fields cross is welcome.
+
+# Meeting times in content/ are read in this time zone unless a file says otherwise.
+timezone: America/New_York
+timezone_city: Knoxville
+
+# How a meeting runs (agreed at the kick-off meeting, 8 April 2025).
+meeting_format:
+  - title: Introduction
+    text: The host introduces the speaker and the question.
+  - title: Presentation
+    text: An open topic, chosen by the speaker.
+  - title: Discussion
+    text: Led by the host, with everyone on the call. About an hour and a half in all.
+
+organizers:
+  - name: Wei-Ren Chen
+    affiliation: Oak Ridge National Laboratory
+    email: chenw@ornl.gov
+  - name: Changwoo Do
+    affiliation: Oak Ridge National Laboratory
+    email: doc1@ornl.gov
+
+admin:
+  label: Administrative assistant
+  email: forgetyal@ornl.gov
+
+# Institutions that people have joined the meetings from. The counts on the
+# home page ("N institutions in M countries") are computed from this list.
+community:
+  - name: Oak Ridge National Laboratory
+    country: United States
+  - name: Massachusetts Institute of Technology
+    country: United States
+  - name: National Institute of Standards and Technology
+    country: United States
+  - name: Institut Laue-Langevin
+    country: France
+  - name: CNRS
+    country: France
+  - name: Forschungszentrum Jülich
+    country: Germany
+  - name: Aarhus University
+    country: Denmark
+  - name: University of Milan
+    country: Italy
+  - name: Institute for Solid State Physics, University of Tokyo
+    country: Japan
+  - name: Oita University
+    country: Japan
+  - name: Korea Atomic Energy Research Institute
+    country: South Korea
+  - name: National Tsing Hua University
+    country: Taiwan

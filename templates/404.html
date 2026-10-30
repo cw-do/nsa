@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block title %}Page not found | {{ site.short_name }}{% endblock %}
+
+{% block main %}
+<section class="section page-head">
+  <div class="wrap">
+    <h1 class="page-title">This page isn’t here</h1>
+    <p class="lead">The link may be old, or the page may have moved. Start again from <a href="{{ base }}">the home page</a>, <a href="{{ base }}meetings/">the meetings</a> or <a href="{{ base }}long-view/">The Long View</a>.</p>
+  </div>
+</section>
+{% endblock %}

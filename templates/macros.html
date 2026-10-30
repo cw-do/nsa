@@ -1,0 +1,45 @@
+{% macro speaker_line(people) %}
+{% for p in people %}<span class="person">{{ p.name }}{% if p.affiliation %}<span class="affil">{{ p.affiliation }}</span>{% endif %}</span>{% endfor %}
+{% endmacro %}
+
+{% macro meeting_row(m, base) %}
+<li class="tl-item"{% if m.upcoming %} data-end="{{ m.end_iso }}"{% endif %}>
+  <span class="tl-num" aria-hidden="true">{{ m.number }}</span>
+  <div class="tl-body">
+    <p class="tl-date"><time datetime="{{ m.date }}">{{ m.date_text }}</time>{% if m.upcoming %} <span class="tag" data-upcoming-tag>Upcoming</span>{% endif %}</p>
+    <h3 class="tl-title"><a href="{{ base }}{{ m.url }}"><span class="visually-hidden">{{ m.ordinal }} meeting: </span>{{ m.title }}</a></h3>
+    {% if m.speakers %}<p class="tl-who">{{ speaker_line(m.speakers) }}</p>{% elif m.summary %}<p class="tl-who">{{ m.summary }}</p>{% endif %}
+  </div>
+</li>
+{% endmacro %}
+
+{% macro when(e) %}
+<p class="when">
+  <time datetime="{{ e.start_iso or e.date }}">{{ e.weekday }} {{ e.date_text }}</time>
+  {% if e.time_text %}<span class="when-time">{{ e.time_text }}{% if not e.timezone %} ({{ site.timezone_city }}){% endif %}</span>
+  <span class="localtime" data-start="{{ e.start_iso }}" hidden></span>{% endif %}
+</p>
+{% endmacro %}
+
+{% macro event_card(e, base) %}
+<article class="event" data-end="{{ e.end_iso }}">
+  <p class="event-kind">{% if e.kind == 'meeting' %}{{ e.ordinal }} NSA meeting{% else %}The Long View{% endif %}</p>
+  <h3 class="event-title"><a href="{{ base }}{{ e.url }}">{% if e.kind == 'meeting' %}{{ e.title }}{% else %}{{ e.title or e.guest }}{% endif %}</a></h3>
+  {% if e.kind == 'meeting' and e.speakers %}<p class="event-who">{{ speaker_line(e.speakers) }}</p>{% endif %}
+  {% if e.kind == 'conversation' %}
+  {% if e.title %}<p class="event-who"><span class="person">{{ e.guest }}{% if e.affiliation %}<span class="affil">{{ e.affiliation }}</span>{% endif %}</span></p>
+  {% elif e.affiliation %}<p class="event-who affil-only">{{ e.affiliation }}</p>{% endif %}
+  {% endif %}
+  {{ when(e) }}
+</article>
+{% endmacro %}
+
+{% macro event_actions(e, base) %}
+{% if e.upcoming %}
+<div class="actions" data-end="{{ e.end_iso }}">
+  {% if e.register_url %}<a class="btn btn-gold" href="{{ e.register_url }}">Register</a>{% endif %}
+  {% if e.join_url %}<a class="btn{% if not e.register_url %} btn-gold{% endif %}" href="{{ e.join_url }}">Join on Zoom</a>{% endif %}
+  {% if e.has_ics %}<a class="btn" href="{{ base }}{{ e.url }}event.ics" download>Add to calendar</a>{% endif %}
+</div>
+{% endif %}
+{% endmacro %}

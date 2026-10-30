@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% from "macros.html" import meeting_row %}
+
+{% block title %}Meetings | {{ site.name }}{% endblock %}
+{% block description %}Talks, abstracts and discussions of the {{ site.short_name }} working group since {{ site.founded }}.{% endblock %}
+
+{% block main %}
+<section class="section page-head">
+  <div class="wrap">
+    <h1 class="page-title">Meetings</h1>
+    <p class="lead">Every meeting since the kick-off in April 2025, newest first. Open one for the abstract and references.</p>
+  </div>
+</section>
+<section class="section section-tight">
+  <div class="wrap">
+    <ol class="timeline timeline-wide">
+    {% for m in meetings %}
+      {{ meeting_row(m, base) }}
+    {% endfor %}
+    </ol>
+  </div>
+</section>
+{% endblock %}

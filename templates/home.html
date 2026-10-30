@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+{% from "macros.html" import meeting_row, event_card, speaker_line %}
+
+{% block main %}
+<section class="hero">
+  <svg class="rings" viewBox="0 0 800 800" aria-hidden="true">
+    <g fill="none" stroke="var(--cyan)">
+      <circle cx="0" cy="400" r="190" stroke-width="1.4" opacity=".34"/>
+      <circle cx="0" cy="400" r="260" stroke-width="1" opacity=".24" stroke-dasharray="2 7"/>
+      <circle cx="0" cy="400" r="330" stroke-width="1" opacity=".18"/>
+      <circle cx="0" cy="400" r="410" stroke-width="1" opacity=".12" stroke-dasharray="2 9"/>
+      <circle cx="0" cy="400" r="500" stroke-width="1" opacity=".08"/>
+    </g>
+  </svg>
+  <div class="wrap hero-grid">
+    <div class="hero-text">
+      <h1 class="stagger" aria-label="{{ site.name }}">
+        {% for line in site.hero_lines %}<span>{{ line }}</span>{% endfor %}
+      </h1>
+      <p class="lead">{{ site.lead }}</p>
+      <div class="actions">
+        <a class="btn btn-gold" href="{{ base }}long-view/">Introducing The Long View</a>
+        <a class="btn" href="#join">Join the mailing list</a>
+      </div>
+    </div>
+    <figure class="sim">
+      <canvas id="chain" role="img" aria-label="Animation: a semiflexible polymer chain drawn as a tube of dots, and below it a log-log plot of its scattering intensity against q, compared with the Debye function."></canvas>
+      <figcaption>
+        Live: a semiflexible chain of <span data-segments>120</span> segments, twisting at random in your browser.
+        <span class="key-gold">Gold</span>: its scattering, summed over every pair of segments.
+        <span class="key-cyan">Dashed</span>: Debye’s 1947 model of an ideal chain with the same radius of gyration — right at small <i>q</i>, wrong where the chain’s stiffness shows.
+      </figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="lv-band" aria-labelledby="lv-title">
+  <div class="wrap lv-head">
+    <p class="lv-intro">{{ long_view.intro }}</p>
+    <h2 class="lv-title" id="lv-title">{{ long_view.title }}</h2>
+    <p class="lv-sub">{{ long_view.subtitle }}</p>
+  </div>
+  <div class="lv-art">
+    <img src="{{ base }}assets/img/long-view-art.jpg" alt="" width="1122" height="515" loading="lazy">
+  </div>
+  <div class="wrap lv-body">
+    <p class="lv-headline">{{ long_view.headline }}</p>
+    <p class="lv-summary">{{ long_view.summary }}</p>
+    <p class="lv-closing">{{ long_view.closing }}</p>
+    <div class="actions actions-center">
+      <a class="btn btn-gold" href="{{ base }}long-view/">About the series</a>
+      <a class="btn" href="{{ mailto('The Long View: please notify me') }}">Tell me when it starts</a>
+    </div>
+  </div>
+</section>
+
+{% if upcoming %}
+<section class="section" aria-labelledby="next-title">
+  <div class="wrap">
+    <h2 class="section-title" id="next-title">Coming up</h2>
+    <div class="upcoming" data-upcoming>
+    {% for e in upcoming %}
+      {{ event_card(e, base) }}
+    {% endfor %}
+      <p class="upcoming-empty" hidden>The next meeting will be announced here.</p>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<section class="section" id="meetings" aria-labelledby="meetings-title">
+  <div class="wrap split">
+    <div class="split-side">
+      <h2 class="section-title" id="meetings-title">Meetings</h2>
+      <p class="muted">Talks and discussions since the kick-off in April 2025. Each meeting has a speaker, a host, and time to argue.</p>
+      <p><a class="more" href="{{ base }}meetings/">All meetings and abstracts</a></p>
+    </div>
+    <ol class="timeline">
+    {% for m in meetings %}
+      {{ meeting_row(m, base) }}
+    {% endfor %}
+    </ol>
+  </div>
+</section>
+
+<section class="section" id="about" aria-labelledby="about-title">
+  <div class="wrap split">
+    <div class="split-side">
+      <h2 class="section-title" id="about-title">About the group</h2>
+    </div>
+    <div class="split-main">
+      <div class="prose">{{ about.body | safe }}</div>
+      <h3 class="sub-title">How a meeting runs</h3>
+      <ol class="steps">
+      {% for s in site.meeting_format %}
+        <li><span class="step-title">{{ s.title }}</span> {{ s.text }}</li>
+      {% endfor %}
+      </ol>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="community" aria-labelledby="community-title">
+  <div class="wrap split">
+    <div class="split-side">
+      <h2 class="section-title" id="community-title">Who comes</h2>
+    </div>
+    <div class="split-main">
+      <p class="statement">People from {{ site.community | length }} institutions in {{ countries | length }} countries have joined the meetings so far.</p>
+      <ul class="institutions">
+      {% for i in site.community %}
+        <li>{{ i.name }}<span>{{ i.country }}</span></li>
+      {% endfor %}
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="section join" id="join" aria-labelledby="join-title">
+  <div class="wrap split">
+    <div class="split-side">
+      <h2 class="section-title" id="join-title">Where this is going</h2>
+    </div>
+    <div class="split-main">
+      <div class="prose">
+        <p>As far as we know, no other group meets where neutron scattering, soft matter and the mathematics of data analysis cross. We began in April 2025 as an online meeting among colleagues. We would like it to grow into a society: a seminar series, workshops, and one day a meeting of its own.</p>
+        <p>If your work sits here, join us. Write to the organizers to get the meeting announcements, or to propose a talk.</p>
+      </div>
+      <div class="actions">
+        <a class="btn btn-gold" href="{{ mailto('Join the NSA mailing list') }}">Join the mailing list</a>
+        <a class="btn" href="{{ mailto('Proposing a talk for NSA') }}">Propose a talk</a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ base }}assets/js/chain.js?v={{ version.chain }}" defer></script>
+{% endblock %}

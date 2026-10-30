@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% from "macros.html" import speaker_line, when, event_actions %}
+
+{% block title %}{{ c.guest }} | The Long View{% endblock %}
+{% block description %}The Long View: a conversation with {{ c.guest }}{% if c.affiliation %} ({{ c.affiliation }}){% endif %}, {{ c.date_text }}.{% endblock %}
+{% block og_image %}og-long-view.jpg{% endblock %}
+
+{% block main %}
+<article class="section page-head detail">
+  <div class="wrap detail-grid">
+    <header class="detail-head">
+      <p class="detail-kind"><a href="{{ base }}long-view/">The Long View</a> <span aria-hidden="true">/</span> {{ long_view.subtitle }}</p>
+      <h1 class="page-title">{{ c.guest }}</h1>
+      {% if c.title %}<p class="lead">{{ c.title }}</p>{% endif %}
+      {% if c.upcoming %}{{ when(c) }}{{ event_actions(c, base) }}{% endif %}
+      {% if c.recording_url %}<div class="actions"><a class="btn btn-gold" href="{{ c.recording_url }}">Watch the recording</a></div>{% endif %}
+    </header>
+
+    <dl class="facts">
+      <div><dt>Date</dt><dd><time datetime="{{ c.date }}">{{ c.date_text }}</time>{% if c.time_text %}<br>{{ c.time_text }}{% endif %}</dd></div>
+      {% if c.affiliation %}<div><dt>Guest</dt><dd>{{ speaker_line([{'name': c.guest, 'affiliation': c.affiliation}]) }}</dd></div>{% endif %}
+      {% if c.in_conversation_with %}<div><dt>In conversation with</dt><dd>{{ speaker_line(c.in_conversation_with) }}</dd></div>{% endif %}
+    </dl>
+
+    {% if c.body %}
+    <div class="detail-main prose">{{ c.body | safe }}</div>
+    {% endif %}
+  </div>
+</article>
+{% endblock %}
